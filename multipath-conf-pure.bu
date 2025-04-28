@@ -1,0 +1,40 @@
+variant: openshift
+version: 4.18.0
+metadata:
+  name: 99-master-multipath 
+  labels:
+    machineconfiguration.openshift.io/role: master 
+storage:
+  files:
+  - path: /etc/multipath.conf
+    mode: 0644 
+    overwrite: true
+    contents:
+      inline: |
+        defaults {
+            user_friendly_names no
+            enable_foreign "^$"
+            polling_interval 10
+            find_multipaths yes
+        }
+        devices {
+            device {
+              vendor                   "PURE"
+              product                  "FlashArray"
+              path_selector            "service-time 0"
+              hardware_handler         "1 alua"
+              path_grouping_policy     group_by_prio
+              prio                     alua
+              failback                 immediate
+              path_checker             tur
+              fast_io_fail_tmo         10
+              user_friendly_names      no
+              no_path_retry            0
+              features                 0
+              dev_loss_tmo             600
+            }
+        }   
+        blacklist_exceptions {
+            property "(SCSI_IDENT_|ID_WWN)"
+        }    
+
